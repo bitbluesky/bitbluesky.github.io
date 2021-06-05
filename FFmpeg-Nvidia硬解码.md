@@ -274,17 +274,21 @@ Table 3. CUDA Toolkit and Corresponding Driver Versions
 
 # 参考资料
 重要：Ubuntu 16.04下编译ffmpeg支持CUDA下的cuvid vnenc和NPP http://notes.maxwi.com/2017/03/01/ubuntu-compile-ffmpeg-with-cuvid-nvenc-npp/
+
 重要：Using FFmpeg with NVIDIA GPU Hardware Acceleration-nvidia官网 https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/
+
 非常重要：NVIDIA FFmpeg Transcoding Guide-nvidia官网 https://developer.nvidia.com/blog/nvidia-ffmpeg-transcoding-guide/
 
 NVIDIA FFmpeg 转码指南-中文版 https://developer.nvidia.com/zh-cn/blog/nvidia-ffmpeg-transcoding-guide/
 
 Using GPU hardware to speed up FFmpeg video transcoding and pit draining https://programming.vip/docs/using-gpu-hardware-to-speed-up-ffmpeg-video-transcoding-and-pit-draining.html
+
 HWAccelIntro-ffmpeg官网 https://trac.ffmpeg.org/wiki/HWAccelIntro
 
 图灵 H.264 视频编码速度和质量 https://developer.nvidia.com/zh-cn/blog/turing-h264-video-encoding-speed-and-quality/
 
 ffmpeg Nvidia硬件加速总结 https://blog.csdn.net/LeoChen1983/article/details/72730802
+
 使用GPU硬件加速FFmpeg视频转码 https://www.jianshu.com/p/59da3d350488
 
 使用FFmpeg调用NVIDIA GPU实现H265转码H264 https://blog.csdn.net/qq_22633333/article/details/107701301
