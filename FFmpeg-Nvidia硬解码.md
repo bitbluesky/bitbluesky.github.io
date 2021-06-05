@@ -70,6 +70,7 @@ Transcoding often involves not only changing format or bitrate of the input stre
 ffmpeg -vsync 0 –hwaccel cuvid -c:v h264_cuvid –resize 1280x720 -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
 
 If multiple output resolutions are needed (1:N transcode), the scale_npp filter can resize decoded frames on the GPU. This way we can generate multiple output streams with multiple different resolutions but only using one resize step for all streams. See the next line for an example of 1:2 transcode.
+
 ffmpeg -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 \ -c:a copy –vf scale_npp=1280:720 -c:v h264_nvenc -b:v 5M output_720.mp4 \ -c:a copy -vf scale_npp=640:320 -c:v h264_nvenc -b:v 3M output_360.mp4
 
 Using -vf "scale_npp=1280:720" will set scale_npp as filter for the decoded images
@@ -98,6 +99,7 @@ The NPP library optimizes the use of available computing resources so that your 
 
 
 npp像素格式转换的命令示例：
+
 ffmpeg -vsync 0 -hwaccel_device 2 -hwaccel cuda -hwaccel_output_format cuda -i ~/vedio/drone1.flv -vf "scale_npp=format=yuv420p,hwdownload,format=yuv420p" ff22cuda2.yuv
 
 
