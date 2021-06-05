@@ -47,15 +47,11 @@ ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:v h264_nvenc -b
 
 Without the -hwaccel cuda -hwaccel_output_format cuda option, the decoded raw frames would be copied back to system memory via the PCIe bus, shown in figure 3. Later, the same image would be copied back to GPU memory via PCIe to encode on the GPU. These two additional transfers create latency due to the transfer time and will increase PCIe bandwidth occupancy.
 
-Memory flow without hwaccel diagram
-
 ![image](https://user-images.githubusercontent.com/6881931/120884857-42f80f80-c618-11eb-9578-8ab75cf03fde.png)
 
 Figure 3: Memory flow without hwaccel
 
 Adding the -hwaccel cuvid option means the raw decoded frames will not be copied and the transcoding will be faster and use less system resources, as shown in figure 4.
-
-Memory flow with hwaccel diagram
 
 ![image](https://user-images.githubusercontent.com/6881931/120884860-4a1f1d80-c618-11eb-87a3-3fec52d283e0.png)
 
