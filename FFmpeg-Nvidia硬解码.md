@@ -30,9 +30,12 @@ FFmpeg supports hardware accelerated decoding and encoding via the hwaccel cuda,
 * Build with multiple processes to increase build speed and suppress excessive output: make -j -s
 
 Using FFmpeg to do software 1:1 transcode is simple:
+
 ffmpeg -i input.mp4 -c:a copy -c:v h264 -b:v 5M output.mp4
+
 But this is going to be slow slow since it only uses the CPU-based software encoder and decoder. Using the hardware encoder NVENC and decoder NVDEC requires adding some more parameters to tell ffmpeg which encoder and decoders to use. 
 Maximizing the transcoding speed also means making sure that the decoded image is kept in GPU memory so the encoder can efficiently access it.
+
 ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:v h264_nvenc -b:v 5M output.mp4
 
 | | |
@@ -63,22 +66,29 @@ Given PCIe bandwidth limits, copying uncompressed image data would quickly satur
 ## Processing filters
 
 Transcoding often involves not only changing format or bitrate of the input stream, but also resizing it. Two options exist for resizing on the GPU: using the npp_scale filter or the nvcuvid resize option. The nvcuvid resize option can be used when transcoding from one input to one output stream with different resolution (1:1 transcode). See the next line for an example.
+
 ffmpeg -vsync 0 –hwaccel cuvid -c:v h264_cuvid –resize 1280x720 -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
+
 If multiple output resolutions are needed (1:N transcode), the scale_npp filter can resize decoded frames on the GPU. This way we can generate multiple output streams with multiple different resolutions but only using one resize step for all streams. See the next line for an example of 1:2 transcode.
 ffmpeg -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 \ -c:a copy –vf scale_npp=1280:720 -c:v h264_nvenc -b:v 5M output_720.mp4 \ -c:a copy -vf scale_npp=640:320 -c:v h264_nvenc -b:v 3M output_360.mp4
+
 Using -vf "scale_npp=1280:720" will set scale_npp as filter for the decoded images
+
 The interpolation algorithm can be defined for scale_npp as an additional argument. Cubic interpolation is used by default but other algorithms might give better results depending on scale factor and images. Using the super-sampling algorithm is recommended for best quality when downscaling. See below for an example:
+
 ffmpeg -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy –vf scale_npp=1280:720:interp_algo=super -c:v h264_nvenc -b:v 5M output_720.mp4
 
 ## Mixing CPU and GPU processing
 
 Sometimes it might be necessary to mix CPU and GPU processing. For example you may need to decode on the CPU, because the format is unsupported on the GPU decoder, or because a filter is not available on the GPU. In those cases, you can’t use the -hwaccel cuvid or -hwaccel cuda flag. Instead, you need to manage uploading the data from system to GPU memory using the hwupload_cuda filter. In the example below, an H.264 stream is decoded on the GPU and downloaded to system memory since -hwaccel cuvid is not set. The fade filter is applied in system memory and the processed image uploaded to GPU memory using the hwupload_cuda filter. Finally, the image is scaled using scale_npp and encoded on the GPU.
+
 ffmpeg -vsync 0 -c:v h264_cuvid -i input.264 -vf "fade,hwupload_cuda,scale_npp=1280:720" -c:v h264_nvenc output.264
 
 
 
 # npp_scale
 The NVIDIA Performance Primitives (NPP) library provides GPU-accelerated image, video, and signal processing functions that perform up to 30x faster than CPU-only implementations. With over 5000 primitives for image and signal processing, you can easily perform tasks such as color conversion, image compression, filtering, thresholding and image manipulation.
+
 The NPP library optimizes the use of available computing resources so that your application achieves maximum performance across the data center, workstation and embedded platforms. Today, NPP is widely used by engineers, scientists and researchers working on images processing, signals processing and computer vision applications in autonomous vehicles, medical imaging, robotics and HPC.
 
 
