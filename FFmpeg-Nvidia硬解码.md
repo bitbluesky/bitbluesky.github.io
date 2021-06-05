@@ -111,10 +111,13 @@ ffmpeg -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i vehicle_human_cg_53
 可能遇到的编译错误：
 
 bugfix：[h264_nvenc @ 0x32c2080] Driver does not support the required nvenc API version. Required: 10.0 Found: 9.0
+
 https://blog.csdn.net/qq_23282479/article/details/107579032
 
 https://forums.developer.nvidia.com/t/ffmpeg-nvenc-issue-driver-does-not-support-the-required-nvenc-api-version-required-9-1-found-9-0/109348
+
 nv-codec-headers里的README记录了最低要求的驱动版本号（可以到github里面去看https://github.com/FFmpeg/nv-codec-headers）
+
 在nv-codec-headers目录下执行git checkout sdk/9.0，切换回旧版本后，make clean之后重新编译ffmpeg即可。
 
 
