@@ -37,7 +37,9 @@ fps, as a filter, needs to be inserted in a filtergraph. It offers five rounding
 添加fps filter后，没有循环调用，导致滞留的frame没有取出，相关资源不会释放，导致最终av_buffer_pool_get失败，报错No decoder surfaces left
 
 # 解决方案
-第一次错误的解决方案
+
+## 第一次错误的解决方案
+
 修改init_filters时设置给avfilter_graph_parse_ptr的参数，将filters_descr从
 
 fps=12.5,scale_npp=format=yuv420p,hwdownload,format=yuv420p
@@ -48,11 +50,9 @@ scale_npp=format=yuv420p,hwdownload,format=yuv420p,fps=12.5
 
 备注：调整filters_descr后，因为fps filter后移，可能会对效率有一定影响。
 
-第二次修改方案
-参照示例代码，将
+## 第二次修改方案
 
-avcodec_receive_frame和
-av_buffersink_get_frame的调用过程根据返回值进行循环调用，取出内部缓存的frame
+参照ffmpeg/doc/examples/filtering_video.c的示例代码，将avcodec_receive_frame和av_buffersink_get_frame的调用过程根据返回值进行循环调用，取出内部缓存的frame
 
 # 排查步骤
 ## 复现问题
@@ -73,7 +73,8 @@ av_buffersink_get_frame的调用过程根据返回值进行循环调用，取出
 
 TODO，尝试fps=在scale_npp之前时修复显存泄漏的问题。得深入看FFmpeg fps filter的代码。
 
-第二次分析问题
+## 第二次分析问题
+
 因为第一次修改将fps filter后移后，出现了内存问题。并且之前没有查到根本原因，所以继续深入排查。
 
 在libavutil/buffer.c libavcodec/nvdec.c  libavcodec/nvdec_h264.c等源码中添加日志。
@@ -91,30 +92,47 @@ TODO，尝试fps=在scale_npp之前时修复显存泄漏的问题。得深入看
 
 
 [wangyu@xxx ffmpeg]$ git status libav*
+
 On branch master
+
 Changes not staged for commit:
+
 modified: libavcodec/decode.c
+
 modified: libavcodec/h264_slice.c
+
 modified: libavcodec/h264dec.c
+
 modified: libavcodec/nvdec.c
+
 modified: libavcodec/nvdec_h264.c
+
 modified: libavutil/buffer.c
+
 modified: libavutil/mem.c
 
-涉及到的函数：
+
+### 涉及到的函数：
 
 static int decode_simple_internal(AVCodecContext *avctx, AVFrame *frame)
+
 static AVBufferRef *nvdec_decoder_frame_alloc(void *opaque, int size)   重要
+
 int ff_nvdec_decode_init(AVCodecContext *avctx)    重要
+
          pool->dpb_size = frames_ctx->initial_pool_size;   //dpb_size初始是10
         ctx->decoder_pool = av_buffer_pool_init2(sizeof(int), pool, nvdec_decoder_frame_alloc, av_free);  //设置decoder pool， 会设置nvdec_decoder_frame_alloc来申请空间
 
 ff_nvdec_start_frame
+
 nvdec_h264_start_frame
+
 av_buffer_create
+
 AVBufferRef *av_buffer_pool_get(AVBufferPool *pool)
 
-AVBufferPool is an API for a lock-free thread-safe pool of AVBuffers.
+
+### AVBufferPool is an API for a lock-free thread-safe pool of AVBuffers.
 
 Frequently allocating and freeing large buffers may be slow. AVBufferPool is meant to solve this in cases when the caller needs a set of buffers of the same size (the most obvious use case being buffers for raw video or audio frames).
 
